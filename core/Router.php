@@ -2,15 +2,17 @@
 
 namespace app\core;
 
+use app\controllers\HomeController;
 
 /**
  * The Router's Class
  */
-class Router
+final class Router
 {
     private static array $map = [];
     private string $method;
     private string $url;
+    private $routeMatch = null;
 
     public function __construct(string $method, string $url)
     {
@@ -24,22 +26,6 @@ class Router
     public function get($url, $actionController): void
     {
         self::$map['get'][] = new Route($url, $actionController);
-        echo "<br><br>";
-        // var_dump(self::$map['get']);
-
-        // echo "<br><br>";
-        // var_dump(self::$map['get'][3]);
-        // echo "<br><br><br>______________";
-        // foreach (self::$map['get'] as $key => $value) {
-        //     var_dump($key->fullRegExp());
-        // }
-        /* if (preg_match(
-            self::$map['get'][3]->fullRegExp(),
-            $this->url
-        ) === 1) {
-            echo "<h1>TRUE_MATHES</h1>";
-        } */
-        // self::$map['get'][$url] = $actionController;
     }
 
     /**
@@ -47,7 +33,7 @@ class Router
      **/
     public function post($url, $actionController): void
     {
-        self::$map['post'][$url] = $actionController;
+        self::$map['post'][] = new Route($url, $actionController);
     }
 
 
@@ -56,7 +42,7 @@ class Router
      **/
     public function put($url, $actionController): void
     {
-        self::$map['put'][$url] = $actionController;
+        self::$map['put'][] = new Route($url, $actionController);
     }
 
     /**
@@ -64,7 +50,7 @@ class Router
      **/
     public function delete($url, $actionController): void
     {
-        self::$map['delete'][$url] = $actionController;
+        self::$map['delete'][] = new Route($url, $actionController);
     }
 
     /**
@@ -72,7 +58,18 @@ class Router
      */
     public function match(): bool
     {
-        return isset(self::$map[$this->method][$this->url]) ? true : false;
+
+        if (is_null($this->routeMatch)) {
+            foreach (self::$map[$this->method] as $index => $Route) {
+                if ($Route->match($this->url)) {
+                    $this->routeMatch = &$Route;
+                    return true;
+                }
+            }
+        } elseif ($this->routeMatch instanceof Route) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -80,11 +77,10 @@ class Router
      **/
     public function resolve()
     {
-        // return self::$map[$this->method][$this->url] ?? false;
-        foreach (self::$map[$this->method] as $index => $Route) {
-            if($Route->match($this->url)){
-                echo "<h1>TODO OK PARA LA RUTA::  {$Route->url()} </h1>";
-            }
+        if ($this->match()) {
+            return $this->routeMatch;
         }
+
+        return false;
     }
 }

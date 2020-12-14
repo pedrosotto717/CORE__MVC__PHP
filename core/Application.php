@@ -14,26 +14,34 @@ class Application
     public function run()
     {
         try {
-            $this->router->resolve();
+
             if ($this->router->match()) {
-                $action = $this->router->resolve();
+                $route = $this->router->resolve();
+                $action = $route->handler();
 
                 if (is_array($action)) {
-                    var_dump($action); // return [Controller::method, URI_PARAMS]
+
+                    $controller = new $action[0];
+                    $method_action = (string) $action[1];
+
+                    $controller->{$method_action}($route->params());
                 } elseif (is_string($action)) {
-                    echo $action;
+
+                    View::renderView($action);
                 } elseif (is_callable($action)) {
-                    echo call_user_func($action);
+                    $res = call_user_func($action, $route->params());
+
+                    if (is_string($res) || is_array($res)) {
+                        View::render($res);
+                    }
                 } else {
                     throw new \Exception("Error Processing Request", 1);
                 }
-
             } else {
-                //NOT_FOUND
-                echo "NOT_FOUND";
+                View::renderView("400");
             }
         } catch (\Exception $ex) {
-            echo "500 SERVER_ERROR";
+            View::renderView("500");
         }
     }
 }

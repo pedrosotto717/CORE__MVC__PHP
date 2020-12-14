@@ -7,18 +7,18 @@ namespace app\core;
 /**
  * HandlerRoute 
  */
-class Route
+final class Route
 {
 
   /** @var string $URI  */
-  protected $URI = "";
+  private $URI = "";
 
   /** 
    * 
    *  The action, controller, callable, closure, etc. this route points to.
    *  @var mixed 
    **/
-  public $handler = null;
+  private $handler = null;
 
   /**
    * 
@@ -27,7 +27,7 @@ class Route
    *  @var string $url 
    * 
    */
-  public string $url;
+  private string $url;
 
 
   /**
@@ -37,7 +37,7 @@ class Route
    *  @var string $fullPath_RegExp 
    * 
    */
-  public ?string $fullPath_RegExp = null;
+  private ?string $fullPath_RegExp = null;
 
   /**
    *  Regular Expression for mathes whith the url_param
@@ -45,14 +45,14 @@ class Route
    *  @var string $regExp
    * 
    */
-  public string $regExp = "";
+  private string $regExp = "";
 
   /**
    *  Params of the Request::URL
    *  @var array $uriParams
    * 
    */
-  public array $uriParams = [];
+  private array $uriParams = [];
 
 
   /**
@@ -93,14 +93,29 @@ class Route
   }
 
 
+  public function handler()
+  {
+    return $this->handler;
+  }
+
+
   public function fullRegExp(): ?string
   {
     return $this->fullPath_RegExp ?? null;
   }
 
+  public function regExp(): string
+  {
+    return $this->regExp;
+  }
+
+  public function params(): array
+  {
+    return $this->uriParams;
+  }
+
   public function match($url)
   {
-    // var_dump($this->uriParams);
     if (is_null($this->fullRegExp())) {
 
       return strcasecmp(
@@ -110,12 +125,11 @@ class Route
     } else {
 
       $this->extractParams($url);
-      var_dump($this);
       return preg_match($this->fullRegExp(), $this->cleanURI($url)) ? true : false;
     }
   }
 
-  public function cleanURI($url): string
+  private function cleanURI($url): string
   {
     if ($url === "/") {
       return $url;
@@ -128,7 +142,7 @@ class Route
     );
   }
 
-  public function extractParams($url): void
+  private function extractParams($url): void
   {
     $url = preg_replace("({$this->URI})", "", $url);
 

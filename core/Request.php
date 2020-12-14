@@ -43,4 +43,6 @@ final class Request
         }
         return $data;
     }
+
+    //  getJson
 }
